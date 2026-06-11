@@ -1,4 +1,6 @@
-const BASE = "http://localhost:4000/api";
+
+
+const BASE = "https://xeno-crm-backend-c3k2.onrender.com/api";
 
 export const api = {
   // Customers
