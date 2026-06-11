@@ -6,21 +6,80 @@ export default function AIAssistant() {
   const [result, setResult] = useState(null);
 
   const generateCampaign = () => {
+    
     if (!prompt.trim()) return;
 
     setLoading(true);
 
     setTimeout(() => {
-      setResult({
-        audience: 245,
-        channel: "WhatsApp",
-        score: 92,
-        message:
-          "We miss you! It's been a while since your last purchase. Enjoy an exclusive 20% OFF on your next order.",
-      });
+      const text = prompt.toLowerCase();
+      console.log("PROMPT:", text);
 
+      let campaign;
+
+      if (text.includes("vip")) {
+        campaign = {
+          audience: 120,
+          channel: "WhatsApp",
+          score: 96,
+          message:
+            "Hi {name}, as one of our VIP customers, enjoy an exclusive 25% discount on your next purchase.",
+        };
+      } else if (
+        text.includes("inactive") ||
+        text.includes("lapsed") ||
+        text.includes("60 days")
+      ) {
+        campaign = {
+          audience: 280,
+          channel: "Email",
+          score: 91,
+          message:
+            "Hi {name}, we miss you! Come back and enjoy ₹500 OFF on your next order using code COMEBACK.",
+        };
+      } else if (
+        text.includes("new") ||
+        text.includes("welcome")
+      ) {
+        campaign = {
+          audience: 150,
+          channel: "Email",
+          score: 88,
+          message:
+            "Welcome {name}! Enjoy 15% OFF on your first purchase with us.",
+        };
+      } else if (
+        text.includes("festival") ||
+        text.includes("diwali")
+      ) {
+        campaign = {
+          audience: 500,
+          channel: "WhatsApp",
+          score: 95,
+          message:
+            "Happy Diwali {name}! Celebrate with up to 40% OFF on selected products.",
+        };
+      } else if (text.includes("cart")) {
+        campaign = {
+          audience: 220,
+          channel: "SMS",
+          score: 90,
+          message:
+            "Hi {name}, your cart is waiting! Complete your purchase today and get free shipping.",
+        };
+      } else {
+        campaign = {
+          audience: 245,
+          channel: "WhatsApp",
+          score: 92,
+          message:
+            "Hi {name}, don't miss our latest offers and exclusive deals available for a limited time.",
+        };
+      }
+
+      setResult(campaign);
       setLoading(false);
-    }, 1500);
+    }, 1200);
   };
 
   const createCampaign = () => {
@@ -70,7 +129,7 @@ export default function AIAssistant() {
 
         <textarea
           className="w-full bg-surface border border-border rounded-lg p-4 min-h-[140px]"
-          placeholder="Example: Create a campaign for customers who spent more than ₹5000 and haven't purchased in 60 days"
+          placeholder="Example: Create a campaign for VIP customers"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
         />
@@ -100,7 +159,6 @@ export default function AIAssistant() {
               <p className="text-xs text-muted">
                 Audience Size
               </p>
-
               <p className="text-2xl font-bold">
                 {result.audience}
               </p>
@@ -110,7 +168,6 @@ export default function AIAssistant() {
               <p className="text-xs text-muted">
                 Best Channel
               </p>
-
               <p className="text-2xl font-bold">
                 {result.channel}
               </p>
@@ -120,7 +177,6 @@ export default function AIAssistant() {
               <p className="text-xs text-muted">
                 Campaign Score
               </p>
-
               <p className="text-2xl font-bold">
                 {result.score}%
               </p>
@@ -134,63 +190,6 @@ export default function AIAssistant() {
 
             <div className="bg-surface border border-border rounded-lg p-4">
               {result.message}
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-surface rounded-lg p-4">
-              <p className="text-xs text-muted">
-                Expected Open Rate
-              </p>
-
-              <p className="text-xl font-bold">
-                85%
-              </p>
-            </div>
-
-            <div className="bg-surface rounded-lg p-4">
-              <p className="text-xs text-muted">
-                Expected Conversion
-              </p>
-
-              <p className="text-xl font-bold">
-                12%
-              </p>
-            </div>
-
-            <div className="bg-surface rounded-lg p-4">
-              <p className="text-xs text-muted">
-                Revenue Potential
-              </p>
-
-              <p className="text-xl font-bold">
-                ₹1,20,000
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <p className="font-medium mb-2">
-              AI Reasoning
-            </p>
-
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <ul className="list-disc pl-5 space-y-1">
-                <li>
-                  These customers were previously active.
-                </li>
-                <li>
-                  They have not purchased recently.
-                </li>
-                <li>
-                  WhatsApp has the highest engagement
-                  rate for this audience.
-                </li>
-                <li>
-                  A limited-time discount improves
-                  reactivation chances.
-                </li>
-              </ul>
             </div>
           </div>
 
