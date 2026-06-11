@@ -4,16 +4,15 @@ export default function AIAssistant() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [deliveryStats, setDeliveryStats] = useState(null);
 
   const generateCampaign = () => {
-    
     if (!prompt.trim()) return;
 
     setLoading(true);
 
     setTimeout(() => {
       const text = prompt.toLowerCase();
-      console.log("PROMPT:", text);
 
       let campaign;
 
@@ -78,6 +77,7 @@ export default function AIAssistant() {
       }
 
       setResult(campaign);
+      setDeliveryStats(null);
       setLoading(false);
     }, 1200);
   };
@@ -104,26 +104,19 @@ export default function AIAssistant() {
     alert("Campaign created successfully!");
   };
 
-const launchCampaign = () => {
-  if (!result) return;
+  const launchCampaign = () => {
+    if (!result) return;
 
-  const deliveryStats = {
-    sent: Math.floor(Math.random() * 50) + 150,
-    delivered: Math.floor(Math.random() * 40) + 120,
-    opened: Math.floor(Math.random() * 30) + 80,
-    clicked: Math.floor(Math.random() * 20) + 20,
-    failed: Math.floor(Math.random() * 10),
+    const stats = {
+      sent: Math.floor(Math.random() * 50) + 150,
+      delivered: Math.floor(Math.random() * 40) + 120,
+      opened: Math.floor(Math.random() * 30) + 80,
+      clicked: Math.floor(Math.random() * 20) + 20,
+      failed: Math.floor(Math.random() * 10),
+    };
+
+    setDeliveryStats(stats);
   };
-
-  alert(
-    `Campaign Launched!\n\n` +
-    `Sent: ${deliveryStats.sent}\n` +
-    `Delivered: ${deliveryStats.delivered}\n` +
-    `Opened: ${deliveryStats.opened}\n` +
-    `Clicked: ${deliveryStats.clicked}\n` +
-    `Failed: ${deliveryStats.failed}`
-  );
-};
 
   return (
     <div className="space-y-6">
@@ -223,6 +216,53 @@ const launchCampaign = () => {
               Launch Campaign
             </button>
           </div>
+
+          {deliveryStats && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-4">
+                Campaign Delivery Report
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-surface rounded-lg p-4">
+                  <p className="text-xs text-muted">Sent</p>
+                  <p className="text-2xl font-bold">
+                    {deliveryStats.sent}
+                  </p>
+                </div>
+
+                <div className="bg-surface rounded-lg p-4">
+                  <p className="text-xs text-muted">
+                    Delivered
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {deliveryStats.delivered}
+                  </p>
+                </div>
+
+                <div className="bg-surface rounded-lg p-4">
+                  <p className="text-xs text-muted">Opened</p>
+                  <p className="text-2xl font-bold">
+                    {deliveryStats.opened}
+                  </p>
+                </div>
+
+                <div className="bg-surface rounded-lg p-4">
+                  <p className="text-xs text-muted">Clicked</p>
+                  <p className="text-2xl font-bold">
+                    {deliveryStats.clicked}
+                  </p>
+                </div>
+
+                <div className="bg-surface rounded-lg p-4">
+                  <p className="text-xs text-muted">Failed</p>
+                  <p className="text-2xl font-bold">
+                    {deliveryStats.failed}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
