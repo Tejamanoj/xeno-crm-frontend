@@ -104,11 +104,26 @@ export default function AIAssistant() {
     alert("Campaign created successfully!");
   };
 
-  const launchCampaign = () => {
-    if (!result) return;
+const launchCampaign = () => {
+  if (!result) return;
 
-    alert("Campaign launched successfully!");
+  const deliveryStats = {
+    sent: Math.floor(Math.random() * 50) + 150,
+    delivered: Math.floor(Math.random() * 40) + 120,
+    opened: Math.floor(Math.random() * 30) + 80,
+    clicked: Math.floor(Math.random() * 20) + 20,
+    failed: Math.floor(Math.random() * 10),
   };
+
+  alert(
+    `Campaign Launched!\n\n` +
+    `Sent: ${deliveryStats.sent}\n` +
+    `Delivered: ${deliveryStats.delivered}\n` +
+    `Opened: ${deliveryStats.opened}\n` +
+    `Clicked: ${deliveryStats.clicked}\n` +
+    `Failed: ${deliveryStats.failed}`
+  );
+};
 
   return (
     <div className="space-y-6">
