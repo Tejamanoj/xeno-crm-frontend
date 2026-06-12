@@ -32,6 +32,10 @@ export const api = {
   getCampaigns: () =>
     fetch(`${BASE}/campaigns`).then((r) => r.json()),
 
+  getCampaignCommunications: (id) =>
+    fetch(`${BASE}/campaigns/${id}/communications`)
+      .then((r) => r.json()),
+
   addCampaign: (data) =>
     fetch(`${BASE}/campaigns`, {
       method: "POST",

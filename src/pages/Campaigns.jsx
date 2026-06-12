@@ -22,6 +22,8 @@ export default function Campaigns() {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [communications, setCommunications] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -32,51 +34,63 @@ export default function Campaigns() {
 
   const [generating, setGenerating] = useState(false);
 
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        setLoading(true);
+  async function fetchCampaigns() {
+    try {
+      setLoading(true);
 
-        const data = await api.getCampaigns();
+      const data = await api.getCampaigns();
 
-        let campaignsData = data || [];
+      let campaignsData = Array.isArray(data)
+        ? data
+        : data.campaigns || [];
 
-        const savedCampaign =
-          localStorage.getItem("generatedCampaign");
+      const savedCampaign =
+        localStorage.getItem("generatedCampaign");
 
-        if (savedCampaign) {
-          const aiCampaign = JSON.parse(savedCampaign);
+      if (savedCampaign) {
+        const aiCampaign = JSON.parse(savedCampaign);
 
-          campaignsData = [
-            {
-              id: aiCampaign.id,
-              name: aiCampaign.name,
-              segment_name: "AI Generated Segment",
-              channel: aiCampaign.channel,
-              sent: aiCampaign.audience,
-              opened: Math.floor(
-                aiCampaign.audience * 0.7
-              ),
-              clicked: Math.floor(
-                aiCampaign.audience * 0.25
-              ),
-              status: "draft",
-            },
-            ...campaignsData,
-          ];
-        }
-
-        setCampaigns(campaignsData);
-      } catch (error) {
-        console.error("Campaign Error:", error);
-        setCampaigns([]);
-      } finally {
-        setLoading(false);
+        campaignsData = [
+          {
+            id: aiCampaign.id,
+            name: aiCampaign.name,
+            segment_name: "AI Generated Segment",
+            channel: aiCampaign.channel,
+            sent: aiCampaign.audience,
+            opened: Math.floor(aiCampaign.audience * 0.7),
+            clicked: Math.floor(aiCampaign.audience * 0.25),
+            status: "draft",
+          },
+          ...campaignsData,
+        ];
       }
-    };
 
+      setCampaigns(campaignsData);
+    } catch (error) {
+      console.error("Campaign Error:", error);
+      setCampaigns([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
     fetchCampaigns();
   }, []);
+
+  const viewDetails = async (campaignId) => {
+    try {
+      const data =
+        await api.getCampaignCommunications(
+          campaignId
+        );
+
+      setCommunications(data || []);
+      setSelectedCampaign(campaignId);
+    } catch (err) {
+      console.error("Communication Error:", err);
+    }
+  };
 
   function generateMessage() {
     setGenerating(true);
@@ -182,6 +196,9 @@ export default function Campaigns() {
                 <th className="text-center px-5 py-3">
                   Status
                 </th>
+                <th className="text-center px-5 py-3">
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -189,7 +206,7 @@ export default function Campaigns() {
               {campaigns.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-b border-border/50 hover:bg-white/3"
+                  className="border-b border-border/50 hover:bg-white/5"
                 >
                   <td className="px-5 py-3 text-white font-medium">
                     {c.name}
@@ -203,16 +220,16 @@ export default function Campaigns() {
                     {c.channel}
                   </td>
 
-                  <td className="px-5 py-3 text-right font-mono text-white">
+                  <td className="px-5 py-3 text-right text-white">
                     {c.sent || 0}
                   </td>
 
-                  <td className="px-5 py-3 text-right font-mono text-emerald-400">
-                    {c.opened || "—"}
+                  <td className="px-5 py-3 text-right text-emerald-400">
+                    {c.opened || 0}
                   </td>
 
-                  <td className="px-5 py-3 text-right font-mono text-brand-500">
-                    {c.clicked || "—"}
+                  <td className="px-5 py-3 text-right text-brand-500">
+                    {c.clicked || 0}
                   </td>
 
                   <td className="px-5 py-3 text-center">
@@ -223,12 +240,80 @@ export default function Campaigns() {
                       }
                     />
                   </td>
+
+                  <td className="px-5 py-3 text-center">
+                    <button
+                      onClick={() =>
+                        viewDetails(c.id)
+                      }
+                      className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
+                    >
+                      View Details
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {selectedCampaign && (
+        <div className="bg-panel border border-border rounded-xl p-5">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">
+              Campaign Communications
+            </h3>
+
+            <button
+              onClick={() => {
+                setSelectedCampaign(null);
+                setCommunications([]);
+              }}
+              className="text-red-400"
+            >
+              Close
+            </button>
+          </div>
+
+          <table className="w-full text-sm">
+            <thead>
+              <tr>
+                <th className="text-left py-2">
+                  Customer
+                </th>
+                <th className="text-left py-2">
+                  Channel
+                </th>
+                <th className="text-left py-2">
+                  Status
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {communications.map((comm) => (
+                <tr
+                  key={comm.id}
+                  className="border-t border-border"
+                >
+                  <td className="py-2 text-white">
+                    {comm.customer_name}
+                  </td>
+
+                  <td className="py-2 text-muted">
+                    {comm.channel}
+                  </td>
+
+                  <td className="py-2">
+                    {comm.status}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showModal && (
         <Modal
