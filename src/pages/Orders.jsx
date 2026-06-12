@@ -11,9 +11,8 @@ export default function Orders() {
       try {
         const data = await api.getOrders();
         setOrders(data || []);
-      } catch (error) {
-        console.error("Orders Error:", error);
-        setOrders([]);
+      } catch (err) {
+        console.error("Orders Error:", err);
       } finally {
         setLoading(false);
       }
@@ -31,7 +30,7 @@ export default function Orders() {
   );
 
   const totalRevenue = filteredOrders.reduce(
-    (sum, order) => sum + Number(order.amount || 0),
+    (sum, order) => sum + Number(order.amount),
     0
   );
 
@@ -64,7 +63,7 @@ export default function Orders() {
       <div className="bg-panel border border-border rounded-xl overflow-hidden">
         {loading ? (
           <p className="text-center py-10 text-muted">
-            Loading orders...
+            Loading...
           </p>
         ) : (
           <table className="w-full text-sm">
