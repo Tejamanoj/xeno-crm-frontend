@@ -13,13 +13,15 @@ import { api } from "../lib/api";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
-    total_customers: 0,
-    total_segments: 0,
-    total_campaigns: 0,
-    total_sent: 0,
-    total_opened: 0,
-  });
-
+  total_customers: 0,
+  total_segments: 0,
+  total_campaigns: 0,
+  total_sent: 0,
+  total_opened: 0,
+  total_clicked: 0,
+  open_rate: 0,
+  click_rate: 0,
+});
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,12 +32,15 @@ export default function Dashboard() {
         const trendData = await api.getTrend();
 
         setStats({
-          total_customers: analytics.total_customers || 0,
-          total_segments: analytics.total_segments || 0,
-          total_campaigns: analytics.total_campaigns || 0,
-          total_sent: analytics.total_sent || 0,
-          total_opened: analytics.total_opened || 0,
-        });
+  total_customers: analytics.total_customers || 0,
+  total_segments: analytics.total_segments || 0,
+  total_campaigns: analytics.total_campaigns || 0,
+  total_sent: analytics.total_sent || 0,
+  total_opened: analytics.total_opened || 0,
+  total_clicked: analytics.total_clicked || 0,
+  open_rate: analytics.open_rate || 0,
+  click_rate: analytics.click_rate || 0,
+});
 
         setTrend(
           trendData.map((item) => ({
