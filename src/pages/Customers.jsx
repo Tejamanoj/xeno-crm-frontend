@@ -339,62 +339,58 @@ export default function Customers() {
         </div>
       </motion.div>
 
-      {/* Add Customer Modal */}
-      <Modal
-        title="Add New Customer"
-        onClose={() => setShowModal(false)}
-      >
-        {!showModal ? null : (
-          <div className="space-y-4">
-            {["name", "email", "phone"].map(
-              (field) => (
-                <div key={field}>
-                  <label className="text-xs text-muted block mb-2 font-medium capitalize">
-                    {field === "name" ? "Full Name" : field === "email" ? "Email Address" : "Phone Number"}
-                  </label>
+     {showModal && (
+  <Modal
+    title="Add New Customer"
+    onClose={() => setShowModal(false)}
+  >
+    <div className="space-y-4">
+      {["name", "email", "phone"].map((field) => (
+        <div key={field}>
+          <label className="text-xs text-muted block mb-2 font-medium capitalize">
+            {field === "name"
+              ? "Full Name"
+              : field === "email"
+              ? "Email Address"
+              : "Phone Number"}
+          </label>
 
-                  <input
-                    value={form[field]}
-                    onChange={(e) =>
-                      setForm((p) => ({
-                        ...p,
-                        [field]:
-                          e.target.value,
-                      }))
-                    }
-                    placeholder={
-                      field === "name"
-                        ? "e.g., John Doe"
-                        : field === "email"
-                        ? "john@example.com"
-                        : "+91 98765 43210"
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted/50 focus:border-brand-500 focus:outline-none transition-colors"
-                  />
-                </div>
-              )
-            )}
+          <input
+            value={form[field]}
+            onChange={(e) =>
+              setForm((p) => ({
+                ...p,
+                [field]: e.target.value,
+              }))
+            }
+            placeholder={
+              field === "name"
+                ? "e.g., John Doe"
+                : field === "email"
+                ? "john@example.com"
+                : "+91 98765 43210"
+            }
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted/50 focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+      ))}
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setShowModal(false)
-                }
-              >
-                Cancel
-              </Button>
+      <div className="flex justify-end gap-2 pt-4">
+        <Button
+          variant="outline"
+          onClick={() => setShowModal(false)}
+        >
+          Cancel
+        </Button>
 
-              <Button
-                onClick={addCustomer}
-              >
-                <UserPlus size={13} />
-                Add Customer
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+        <Button onClick={addCustomer}>
+          <UserPlus size={13} />
+          Add Customer
+        </Button>
+      </div>
+    </div>
+  </Modal>
+)}
     </motion.div>
   );
 }
