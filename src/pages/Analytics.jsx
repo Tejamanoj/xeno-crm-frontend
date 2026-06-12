@@ -30,9 +30,7 @@ export default function Analytics() {
     const fetchData = async () => {
       try {
         setLoading(true);
-
         const d = await api.getAnalytics();
-
         setData(d);
       } catch (error) {
         console.error("Analytics error:", error);

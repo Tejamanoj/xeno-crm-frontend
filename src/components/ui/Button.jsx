@@ -1,5 +1,7 @@
 import clsx from "clsx";
 
+import { motion } from "framer-motion";
+
 export default function Button({ children, variant = "primary", size = "sm", onClick, className, disabled }) {
   const base = "inline-flex items-center gap-2 font-medium rounded-lg transition-colors disabled:opacity-40";
   const variants = {
@@ -9,9 +11,13 @@ export default function Button({ children, variant = "primary", size = "sm", onC
   };
   const sizes = { sm: "text-xs px-3 py-1.5", md: "text-sm px-4 py-2" };
   return (
-    <button onClick={onClick} disabled={disabled}
+    <motion.button 
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick} 
+      disabled={disabled}
       className={clsx(base, variants[variant], sizes[size], className)}>
       {children}
-    </button>
+    </motion.button>
   );
 }

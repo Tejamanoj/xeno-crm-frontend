@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { UserPlus, Search } from "lucide-react";
+import { motion } from "framer-motion";
+import { UserPlus, Search, Users, TrendingUp } from "lucide-react";
+import StatCard from "../components/ui/StatCard";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
@@ -10,6 +12,43 @@ const segColor = {
   Active: "green",
   New: "blue",
   Lapsed: "rose",
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const getInitials = (name) => {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-gradient-cyan",
+    "bg-gradient-purple",
+    "bg-gradient-pink",
+    "bg-gradient-lime",
+  ];
+  return colors[name.charCodeAt(0) % colors.length];
+};
+
+const getSpendBadgeGradient = (spent) => {
+  if (spent > 10000) return "bg-gradient-neon";
+  if (spent > 5000) return "bg-gradient-purple";
+  if (spent > 1000) return "bg-gradient-cyan";
+  return "bg-gradient-lime";
 };
 
 export default function Customers() {
@@ -93,19 +132,64 @@ export default function Customers() {
         .includes(search.toLowerCase())
   );
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 bg-panel border border-border rounded-lg px-3 py-2 w-72">
-          <Search size={13} className="text-muted" />
+  const totalSpent = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+  const avgSpent = customers.length > 0 ? Math.round(totalSpent / customers.length) : 0;
 
+  return (
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total Customers"
+          value={customers.length}
+          delta={`${filtered.length} shown`}
+          icon={Users}
+          accent="brand"
+        />
+        <StatCard
+          label="Total Spent"
+          value={`₹${totalSpent.toLocaleString()}`}
+          delta={`₹${avgSpent} average`}
+          icon={TrendingUp}
+          accent="green"
+        />
+        <StatCard
+          label="VIP Customers"
+          value={customers.filter((c) => c.segment === "VIP").length}
+          delta="Premium members"
+          icon={Users}
+          accent="amber"
+        />
+        <StatCard
+          label="Active Customers"
+          value={customers.filter((c) => c.segment === "Active").length}
+          delta="Currently engaged"
+          icon={Users}
+          accent="rose"
+        />
+      </div>
+
+      {/* Search Bar and Add Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between gap-4"
+      >
+        <div className="flex-1 flex items-center gap-2 bg-gradient-glass backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3 hover:border-white/20 transition-all duration-300 focus-within:border-brand-500">
+          <Search size={16} className="text-muted flex-shrink-0" />
           <input
             value={search}
             onChange={(e) =>
               setSearch(e.target.value)
             }
-            placeholder="Search name, email, phone..."
-            className="bg-transparent text-xs text-white placeholder:text-muted outline-none w-full"
+            placeholder="Search by name, email, or phone..."
+            className="bg-transparent text-sm text-white placeholder:text-muted outline-none w-full"
           />
         </div>
 
@@ -116,111 +200,157 @@ export default function Customers() {
           <UserPlus size={14} />
           Add Customer
         </Button>
-      </div>
+      </motion.div>
 
-      <div className="text-xs text-muted">
-        Showing {filtered.length} of{" "}
-        {customers.length} customers
-      </div>
+      {/* Results Count */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="text-xs text-muted font-medium"
+      >
+        Showing <span className="text-white font-semibold">{filtered.length}</span> of{" "}
+        <span className="text-white font-semibold">{customers.length}</span> customers
+      </motion.div>
 
-      <div className="bg-panel border border-border rounded-xl overflow-hidden">
-        {loading ? (
-          <p className="text-center text-muted py-10 text-sm">
-            Loading...
-          </p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs text-muted border-b border-border bg-surface/50">
-                <th className="text-left px-5 py-3">
-                  Name
-                </th>
-                <th className="text-left px-5 py-3">
-                  Email
-                </th>
-                <th className="text-left px-5 py-3">
-                  Phone
-                </th>
-                <th className="text-center px-5 py-3">
-                  Orders
-                </th>
-                <th className="text-right px-5 py-3">
-                  Spent
-                </th>
-                <th className="text-center px-5 py-3">
-                  Segment
-                </th>
-                <th className="text-center px-5 py-3">
-                  Action
-                </th>
-              </tr>
-            </thead>
+      {/* Customers Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="group relative"
+      >
+        <div className="absolute inset-0 bg-gradient-cyan opacity-0 group-hover:opacity-5 blur-xl rounded-2xl transition-opacity duration-500" />
+        
+        <div className="relative bg-gradient-glass backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-8 h-8 rounded-full border-2 border-transparent border-t-brand-500"
+              />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Users size={40} className="text-muted/30 mb-4" />
+              <p className="text-muted text-sm">No customers found</p>
+              <p className="text-muted/50 text-xs">Try adjusting your search or add new customers</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-xs text-muted border-b border-white/10 bg-white/5">
+                    <th className="text-left px-6 py-4 font-semibold">Customer</th>
+                    <th className="text-left px-6 py-4 font-semibold">Email</th>
+                    <th className="text-left px-6 py-4 font-semibold">Phone</th>
+                    <th className="text-center px-6 py-4 font-semibold">Orders</th>
+                    <th className="text-right px-6 py-4 font-semibold">Lifetime Value</th>
+                    <th className="text-center px-6 py-4 font-semibold">Segment</th>
+                    <th className="text-center px-6 py-4 font-semibold">Actions</th>
+                  </tr>
+                </thead>
 
-            <tbody>
-              {filtered.map((c) => (
-                <tr
-                  key={c.id}
-                  className="border-b border-border/50 hover:bg-white/3 transition-colors"
-                >
-                  <td className="px-5 py-3 text-white font-medium">
-                    {c.name}
-                  </td>
+                <tbody className="divide-y divide-white/5">
+                  {filtered.map((customer, idx) => (
+                    <motion.tr
+                      key={customer.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.03 }}
+                      className="hover:bg-white/5 transition-colors duration-300 group/row"
+                    >
+                      {/* Avatar and Name */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            className={`w-10 h-10 rounded-lg ${getAvatarColor(customer.name)} flex items-center justify-center flex-shrink-0 text-xs font-bold text-white shadow-lg`}
+                          >
+                            {getInitials(customer.name)}
+                          </motion.div>
+                          <div className="flex-1">
+                            <p className="font-medium text-white">{customer.name}</p>
+                            <p className="text-xs text-muted/70">ID: {customer.id}</p>
+                          </div>
+                        </div>
+                      </td>
 
-                  <td className="px-5 py-3 text-muted">
-                    {c.email}
-                  </td>
+                      {/* Email */}
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-muted hover:text-white transition-colors">
+                          {customer.email}
+                        </p>
+                      </td>
 
-                  <td className="px-5 py-3 text-muted">
-                    {c.phone}
-                  </td>
+                      {/* Phone */}
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-muted">
+                          {customer.phone}
+                        </p>
+                      </td>
 
-                  <td className="px-5 py-3 text-center font-mono text-white">
-                    {c.total_orders}
-                  </td>
+                      {/* Orders */}
+                      <td className="px-6 py-4 text-center">
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-500/10 text-brand-500 font-mono text-sm font-semibold">
+                          {customer.total_orders || 0}
+                        </div>
+                      </td>
 
-                  <td className="px-5 py-3 text-right font-mono text-emerald-400">
-                    ₹
-                    {c.total_spent.toLocaleString()}
-                  </td>
+                      {/* Lifetime Value */}
+                      <td className="px-6 py-4 text-right">
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          className={`inline-block px-3 py-1.5 rounded-lg ${getSpendBadgeGradient(customer.total_spent || 0)} text-white text-sm font-mono font-semibold`}
+                        >
+                          ₹{(customer.total_spent || 0).toLocaleString()}
+                        </motion.div>
+                      </td>
 
-                  <td className="px-5 py-3 text-center">
-                    <Badge
-                      label={c.segment}
-                      color={
-                        segColor[c.segment] ??
-                        "muted"
-                      }
-                    />
-                  </td>
+                      {/* Segment */}
+                      <td className="px-6 py-4 text-center">
+                        <Badge
+                          label={customer.segment || "Unassigned"}
+                          color={
+                            segColor[customer.segment] ??
+                            "muted"
+                          }
+                        />
+                      </td>
 
-                  <td className="px-5 py-3 text-center">
-  <button
-    onClick={() => deleteCustomer(c.id)}
-    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-medium"
-  >
-    Delete
-  </button>
-</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-center">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => deleteCustomer(customer.id)}
+                          className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all duration-300 text-xs font-medium opacity-0 group-hover/row:opacity-100"
+                        >
+                          Remove
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
-      {showModal && (
-        <Modal
-          title="Add Customer"
-          onClose={() =>
-            setShowModal(false)
-          }
-        >
-          <div className="space-y-3">
+      {/* Add Customer Modal */}
+      <Modal
+        title="Add New Customer"
+        onClose={() => setShowModal(false)}
+      >
+        {!showModal ? null : (
+          <div className="space-y-4">
             {["name", "email", "phone"].map(
               (field) => (
                 <div key={field}>
-                  <label className="text-xs text-muted capitalize block mb-1">
-                    {field}
+                  <label className="text-xs text-muted block mb-2 font-medium capitalize">
+                    {field === "name" ? "Full Name" : field === "email" ? "Email Address" : "Phone Number"}
                   </label>
 
                   <input
@@ -234,18 +364,18 @@ export default function Customers() {
                     }
                     placeholder={
                       field === "name"
-                        ? "Full name"
+                        ? "e.g., John Doe"
                         : field === "email"
-                        ? "email@example.com"
-                        : "+91 XXXXX XXXXX"
+                        ? "john@example.com"
+                        : "+91 98765 43210"
                     }
-                    className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted outline-none focus:border-brand-500 transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted/50 focus:border-brand-500 focus:outline-none transition-colors"
                   />
                 </div>
               )
             )}
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() =>
@@ -258,12 +388,13 @@ export default function Customers() {
               <Button
                 onClick={addCustomer}
               >
+                <UserPlus size={13} />
                 Add Customer
               </Button>
             </div>
           </div>
-        </Modal>
-      )}
-    </div>
+        )}
+      </Modal>
+    </motion.div>
   );
 }
