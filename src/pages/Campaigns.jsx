@@ -75,8 +75,10 @@ export default function Campaigns() {
   }
 
   useEffect(() => {
-    fetchCampaigns();
-  }, []);
+  (async () => {
+    await fetchCampaigns();
+  })();
+}, []);
 
   const viewDetails = async (campaignId) => {
     try {
