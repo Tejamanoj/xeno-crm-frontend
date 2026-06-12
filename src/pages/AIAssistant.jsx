@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api } from "../lib/api";
 
 export default function AIAssistant() {
   const [prompt, setPrompt] = useState("");
@@ -6,80 +7,27 @@ export default function AIAssistant() {
   const [result, setResult] = useState(null);
   const [deliveryStats, setDeliveryStats] = useState(null);
 
-  const generateCampaign = () => {
+  const generateCampaign = async () => {
     if (!prompt.trim()) return;
 
     setLoading(true);
 
-    setTimeout(() => {
-      const text = prompt.toLowerCase();
+    try {
+      const campaign = await api.generateAI(prompt);
 
-      let campaign;
-
-      if (text.includes("vip")) {
-        campaign = {
-          audience: 120,
-          channel: "WhatsApp",
-          score: 96,
-          message:
-            "Hi {name}, as one of our VIP customers, enjoy an exclusive 25% discount on your next purchase.",
-        };
-      } else if (
-        text.includes("inactive") ||
-        text.includes("lapsed") ||
-        text.includes("60 days")
-      ) {
-        campaign = {
-          audience: 280,
-          channel: "Email",
-          score: 91,
-          message:
-            "Hi {name}, we miss you! Come back and enjoy ₹500 OFF on your next order using code COMEBACK.",
-        };
-      } else if (
-        text.includes("new") ||
-        text.includes("welcome")
-      ) {
-        campaign = {
-          audience: 150,
-          channel: "Email",
-          score: 88,
-          message:
-            "Welcome {name}! Enjoy 15% OFF on your first purchase with us.",
-        };
-      } else if (
-        text.includes("festival") ||
-        text.includes("diwali")
-      ) {
-        campaign = {
-          audience: 500,
-          channel: "WhatsApp",
-          score: 95,
-          message:
-            "Happy Diwali {name}! Celebrate with up to 40% OFF on selected products.",
-        };
-      } else if (text.includes("cart")) {
-        campaign = {
-          audience: 220,
-          channel: "SMS",
-          score: 90,
-          message:
-            "Hi {name}, your cart is waiting! Complete your purchase today and get free shipping.",
-        };
-      } else {
-        campaign = {
-          audience: 245,
-          channel: "WhatsApp",
-          score: 92,
-          message:
-            "Hi {name}, don't miss our latest offers and exclusive deals available for a limited time.",
-        };
+      if (campaign.error) {
+        alert(campaign.error);
+        return;
       }
 
       setResult(campaign);
       setDeliveryStats(null);
+    } catch (error) {
+      console.error("AI Error:", error);
+      alert("AI generation failed");
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   const createCampaign = () => {
