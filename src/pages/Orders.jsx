@@ -10,9 +10,13 @@ export default function Orders() {
     const fetchOrders = async () => {
       try {
         const data = await api.getOrders();
-        setOrders(data || []);
+
+        console.log("ORDERS DATA:", data);
+
+        setOrders(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Orders Error:", err);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
@@ -21,13 +25,15 @@ export default function Orders() {
     fetchOrders();
   }, []);
 
-  const filteredOrders = orders.filter(
-    (order) =>
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer_name
-        .toLowerCase()
-        .includes(search.toLowerCase())
-  );
+  const filteredOrders = Array.isArray(orders)
+    ? orders.filter(
+        (order) =>
+          order.id?.toLowerCase().includes(search.toLowerCase()) ||
+          order.customer_name
+            ?.toLowerCase()
+            .includes(search.toLowerCase())
+      )
+    : [];
 
   const totalRevenue = filteredOrders.reduce(
     (sum, order) => sum + Number(order.amount),
