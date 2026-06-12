@@ -39,6 +39,10 @@ export const api = {
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
+  // Orders
+  getOrders: () =>
+    fetch(`${BASE}/orders`).then((r) => r.json()),
+
   // Analytics
   getAnalytics: () =>
     fetch(`${BASE}/analytics`).then((r) => r.json()),
