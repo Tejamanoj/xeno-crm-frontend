@@ -1,4 +1,4 @@
-const BASE = "https://xeno-crm-backend-c3k2.onrender.com/api";
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export const api = {
   // Customers
