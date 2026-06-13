@@ -19,13 +19,14 @@ const aiMessages = [
 ];
 
 export default function Campaigns() {
-  const [campaigns, setCampaigns]           = useState([]);
-  const [loading, setLoading]               = useState(true);
-  const [showModal, setShowModal]           = useState(false);
+  const [campaigns, setCampaigns]               = useState([]);
+  const [segments, setSegments]                 = useState([]);
+  const [loading, setLoading]                   = useState(true);
+  const [showModal, setShowModal]               = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [communications, setCommunications] = useState([]);
-  const [generating, setGenerating]         = useState(false);
-  const [launching, setLaunching]           = useState(false);
+  const [communications, setCommunications]     = useState([]);
+  const [generating, setGenerating]             = useState(false);
+  const [launching, setLaunching]               = useState(false);
   const [form, setForm] = useState({
     name: "",
     segment_name: "",
@@ -33,11 +34,11 @@ export default function Campaigns() {
     message: "",
   });
 
+  // Refresh button still works — only re-fetches campaigns, not segments
   async function fetchCampaigns() {
     try {
       setLoading(true);
       const data = await api.getCampaigns();
-      // FIX: only use real DB data — no localStorage injection
       setCampaigns(Array.isArray(data) ? data : data.campaigns || []);
     } catch (error) {
       console.error("Campaign Error:", error);
@@ -47,10 +48,30 @@ export default function Campaigns() {
     }
   }
 
+  // Load campaigns + segments in parallel on mount
   useEffect(() => {
-    (async () => {
-      await fetchCampaigns();
-    })();
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        const [campaignData, segmentData] = await Promise.all([
+          api.getCampaigns(),
+          api.getSegments(),
+        ]);
+        if (!cancelled) {
+          setCampaigns(Array.isArray(campaignData) ? campaignData : campaignData.campaigns || []);
+          setSegments(Array.isArray(segmentData) ? segmentData : []);
+        }
+      } catch (error) {
+        console.error("Load error:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   async function viewDetails(campaignId) {
@@ -80,8 +101,6 @@ export default function Campaigns() {
       setLaunching(true);
       const newCampaign = await api.addCampaign(form);
       if (!newCampaign.error) {
-        // FIX: backend now returns campaign with live sent/opened/clicked counts
-        //      so prepend it directly — no need to re-fetch the whole list
         setCampaigns((prev) => [newCampaign, ...prev]);
         setForm({ name: "", segment_name: "", channel: "WhatsApp", message: "" });
         setShowModal(false);
@@ -208,6 +227,8 @@ export default function Campaigns() {
       {showModal && (
         <Modal title="New Campaign" onClose={() => setShowModal(false)}>
           <div className="space-y-3">
+
+            {/* Campaign Name */}
             <div>
               <label className="text-xs text-muted block mb-1">Campaign Name</label>
               <input
@@ -216,15 +237,25 @@ export default function Campaigns() {
                 className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
               />
             </div>
+
+            {/* Target Segment — live dropdown from /api/segments */}
             <div>
               <label className="text-xs text-muted block mb-1">Target Segment</label>
-              <input
+              <select
                 value={form.segment_name}
                 onChange={(e) => setForm((p) => ({ ...p, segment_name: e.target.value }))}
-                placeholder="Leave blank to target all customers"
-                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted/50"
-              />
+                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
+              >
+                <option value="">— All Customers —</option>
+                {segments.map((s) => (
+                  <option key={s.id} value={s.name}>
+                    {s.name} ({s.count} customers)
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Channel */}
             <div>
               <label className="text-xs text-muted block mb-1">Channel</label>
               <select
@@ -237,6 +268,8 @@ export default function Campaigns() {
                 ))}
               </select>
             </div>
+
+            {/* Message */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs text-muted">Message</label>
@@ -255,6 +288,7 @@ export default function Campaigns() {
                 className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
               />
             </div>
+
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowModal(false)}>
                 Cancel
