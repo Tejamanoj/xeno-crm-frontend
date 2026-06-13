@@ -160,14 +160,14 @@ export default function Customers() {
         />
         <StatCard
           label="VIP Customers"
-          value={customers.filter((c) => c.segment === "VIP").length}
+          value={customers.filter((c) => c.segment === "VIP Shoppers").length}
           delta="Premium members"
           icon={Users}
           accent="amber"
         />
         <StatCard
           label="Active Customers"
-          value={customers.filter((c) => c.segment === "Active").length}
+          value={customers.filter((c) => c.segment === "Active Buyers").length}
           delta="Currently engaged"
           icon={Users}
           accent="rose"
