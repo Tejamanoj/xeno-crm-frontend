@@ -13,9 +13,7 @@ export const api = {
     }).then((r) => r.json()),
 
   deleteCustomer: (id) =>
-    fetch(`${BASE}/customers/${id}`, {
-      method: "DELETE",
-    }).then((r) => r.json()),
+    fetch(`${BASE}/customers/${id}`, { method: "DELETE" }).then((r) => r.json()),
 
   // Segments
   getSegments: () =>
@@ -33,8 +31,7 @@ export const api = {
     fetch(`${BASE}/campaigns`).then((r) => r.json()),
 
   getCampaignCommunications: (id) =>
-    fetch(`${BASE}/campaigns/${id}/communications`)
-      .then((r) => r.json()),
+    fetch(`${BASE}/campaigns/${id}/communications`).then((r) => r.json()),
 
   addCampaign: (data) =>
     fetch(`${BASE}/campaigns`, {
@@ -43,9 +40,19 @@ export const api = {
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
+  deleteCampaign: (id) =>
+    fetch(`${BASE}/campaigns/${id}`, { method: "DELETE" }).then((r) => r.json()),
+
   // Orders
   getOrders: () =>
     fetch(`${BASE}/orders`).then((r) => r.json()),
+
+  addOrder: (data) =>
+    fetch(`${BASE}/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
 
   // Analytics
   getAnalytics: () =>
@@ -58,9 +65,7 @@ export const api = {
   generateAI: (prompt) =>
     fetch(`${BASE}/ai/generate`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt }),
     }).then((r) => r.json()),
 };

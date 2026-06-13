@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Send, Sparkles, RefreshCw } from "lucide-react";
+import { Plus, Send, Sparkles, RefreshCw, Trash2 } from "lucide-react";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
@@ -34,7 +34,6 @@ export default function Campaigns() {
     message: "",
   });
 
-  // Refresh button still works — only re-fetches campaigns, not segments
   async function fetchCampaigns() {
     try {
       setLoading(true);
@@ -48,7 +47,6 @@ export default function Campaigns() {
     }
   }
 
-  // Load campaigns + segments in parallel on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -81,6 +79,20 @@ export default function Campaigns() {
       setSelectedCampaign(campaignId);
     } catch (err) {
       console.error("Communication Error:", err);
+    }
+  }
+
+  async function deleteCampaign(id) {
+    if (!window.confirm("Delete this campaign and all its communications?")) return;
+    try {
+      await api.deleteCampaign(id);
+      setCampaigns((prev) => prev.filter((c) => c.id !== id));
+      if (selectedCampaign === id) {
+        setSelectedCampaign(null);
+        setCommunications([]);
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
     }
   }
 
@@ -161,12 +173,21 @@ export default function Campaigns() {
                     <Badge label={c.status} color={statusColor[c.status] || "muted"} />
                   </td>
                   <td className="px-5 py-3 text-center">
-                    <button
-                      onClick={() => viewDetails(c.id)}
-                      className="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 transition"
-                    >
-                      View Details
-                    </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => viewDetails(c.id)}
+                        className="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 transition"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => deleteCampaign(c.id)}
+                        className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
+                        title="Delete campaign"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -227,8 +248,6 @@ export default function Campaigns() {
       {showModal && (
         <Modal title="New Campaign" onClose={() => setShowModal(false)}>
           <div className="space-y-3">
-
-            {/* Campaign Name */}
             <div>
               <label className="text-xs text-muted block mb-1">Campaign Name</label>
               <input
@@ -238,7 +257,6 @@ export default function Campaigns() {
               />
             </div>
 
-            {/* Target Segment — live dropdown from /api/segments */}
             <div>
               <label className="text-xs text-muted block mb-1">Target Segment</label>
               <select
@@ -255,7 +273,6 @@ export default function Campaigns() {
               </select>
             </div>
 
-            {/* Channel */}
             <div>
               <label className="text-xs text-muted block mb-1">Channel</label>
               <select
@@ -269,7 +286,6 @@ export default function Campaigns() {
               </select>
             </div>
 
-            {/* Message */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs text-muted">Message</label>
