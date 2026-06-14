@@ -1,13 +1,31 @@
 import { useState } from "react";
 import { api } from "../lib/api";
 
+function generateNameFromPrompt(text) {
+  const t = text.toLowerCase();
+  if (t.includes("vip") || t.includes("premium"))         return "VIP Re-engagement Drive";
+  if (t.includes("new customer") || t.includes("first"))  return "New Customer Welcome";
+  if (t.includes("inactive") || t.includes("lapsed"))     return "Win Back Lapsed Users";
+  if (t.includes("laptop") || t.includes("electronics"))  return "Electronics Flash Sale";
+  if (t.includes("high value") || t.includes("top"))      return "Loyalty Reward Campaign";
+  return "AI Generated Campaign";
+}
+
+function inferSegment(prompt) {
+  const t = prompt.toLowerCase();
+  if (t.includes("vip") || t.includes("premium"))         return "VIP Shoppers";
+  if (t.includes("new customer") || t.includes("first"))  return "New This Month";
+  if (t.includes("inactive") || t.includes("lapsed"))     return "Lapsed Customers";
+  return "Active Buyers";
+}
+
 export default function AIAssistant() {
-  const [prompt, setPrompt]           = useState("");
-  const [loading, setLoading]         = useState(false);
-  const [launching, setLaunching]     = useState(false);
-  const [result, setResult]           = useState(null);
-  const [launched, setLaunched]       = useState(null);
-  const [campaignName, setCampaignName] = useState("AI Generated Campaign");
+  const [prompt, setPrompt]             = useState("");
+  const [loading, setLoading]           = useState(false);
+  const [launching, setLaunching]       = useState(false);
+  const [result, setResult]             = useState(null);
+  const [launched, setLaunched]         = useState(null);
+  const [campaignName, setCampaignName] = useState("");
 
   async function generateCampaign() {
     if (!prompt.trim()) return;
@@ -18,6 +36,8 @@ export default function AIAssistant() {
       const data = await api.generateAI(prompt);
       if (data.error) { alert(data.error); return; }
       setResult(data);
+      // Auto-fill campaign name based on prompt keywords
+      setCampaignName(data.campaignName || generateNameFromPrompt(prompt));
     } catch (error) {
       console.error("AI Error:", error);
       alert("AI generation failed");
@@ -26,22 +46,13 @@ export default function AIAssistant() {
     }
   }
 
-  // Determine segment from result channel/prompt
-  function inferSegment() {
-    const t = prompt.toLowerCase();
-    if (t.includes("vip") || t.includes("premium"))       return "VIP Shoppers";
-    if (t.includes("new customer") || t.includes("first")) return "New This Month";
-    if (t.includes("inactive") || t.includes("lapsed"))    return "Lapsed Customers";
-    return "Active Buyers";
-  }
-
   async function launchCampaign() {
     if (!result) return;
     setLaunching(true);
     try {
       const payload = {
-        name:         campaignName,
-        segment_name: inferSegment(),
+        name:         campaignName || generateNameFromPrompt(prompt),
+        segment_name: inferSegment(prompt),
         channel:      result.channel,
         message:      result.message,
       };
@@ -108,7 +119,7 @@ export default function AIAssistant() {
             </div>
           </div>
 
-          {/* Campaign name input */}
+          {/* Campaign name — auto-filled from prompt */}
           <div>
             <label className="text-xs text-muted block mb-1">Campaign Name</label>
             <input
@@ -119,7 +130,7 @@ export default function AIAssistant() {
           </div>
 
           <div className="text-xs text-muted">
-            Target Segment: <span className="text-white font-medium">{inferSegment()}</span>
+            Target Segment: <span className="text-white font-medium">{inferSegment(prompt)}</span>
           </div>
 
           <button
